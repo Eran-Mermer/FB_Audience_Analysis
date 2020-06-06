@@ -278,6 +278,13 @@ plt.ylabel('Results')
 plt.show()
 
 
+# # Conclusions #1:
+#    The optimal age + gender for the company's ads are -
+#    * Female 18 - 34
+#    * male 25 - 34
+
+# ---------------
+
 # ### # Optimal Placements:
 
 # In[19]:
@@ -295,7 +302,7 @@ ads_place = ads.merge(placements,
 
 
 five_ads_place = (ads_place.groupby(["Platform", "Placement", "Device Platform"])["Results"].sum()
-                           .to_frame().nlargest(5, "Results", "all").reset_index())
+                           .to_frame().reset_index())
 five_ads_place
 
 
@@ -314,6 +321,59 @@ plt.xlabel('Platform-Placements')
 plt.ylabel('Results')
 plt.show()
 
+
+# # Conclusions #2:
+#    The optimal Platform-Placements for the company's ads are -
+#    * Instagram Stories on mobile
+#    * Facebook feed on mobile
+#    * instagram feed on mobile
+
+# ---------------
+
+# ### # Optimal Placements:
+
+# In[19]:
+
+
+ads_place = ads.merge(placements,
+                how='inner',
+                left_on=['Ad ID', 'Day'],
+                right_on=['Ad ID', 'Day'])
+
+
+# #### Top 5 Platform-Placements groups on <u>Mobile</u>, by results:
+
+# In[20]:
+
+
+five_ads_place = (ads_place.groupby(["Platform", "Placement", "Device Platform"])["Results"].sum()
+                           .to_frame().reset_index())
+five_ads_place
+
+
+# In[21]:
+
+
+x_axis = five_ads_place["Platform"] +"."+ five_ads_place["Placement"]
+y_axis = five_ads_place["Results"]
+
+plt.figure(figsize=(10,3))
+plt.xticks(rotation= 75)
+plt.bar(x_axis, y_axis)
+
+plt.title('Platform-Placements groups on Mobile, by results')
+plt.xlabel('Platform-Placements')
+plt.ylabel('Results')
+plt.show()
+
+
+# # Conclusions #3:
+#    The optimal Platform-Placements for the company's ads are -
+#    * Instagram Stories on mobile
+#    * Facebook feed on mobile
+#    * instagram feed on mobile
+
+# ---------------
 
 # ### # Optimal Locations:
 
@@ -351,6 +411,13 @@ plt.xlabel('Region')
 plt.ylabel('Results')
 plt.show()
 
+
+# # Conclusions #4:
+#    The optimal regions for the company's ads are -
+#    * Tel Aviv
+#    * Central district
+
+# ---------------
 
 # ### # Optimal Days:
 
@@ -416,22 +483,26 @@ plt.ylabel('Results')
 plt.show()
 
 
-# #### # Top 5 Ads [Placement, Region, Age, Gender]:
-#        * Lowest Cost Per Result
-#        * Highest Results
-#        * Highest amount spent VS Lowest Cost per result
-#        * Lowest CPC
-#        * Highest reach
-#        * Lowest Frequensy
-#        
-# #### # Optimal budget per day [Placement, Region, Age, Gender]:
-#        * Highest reach
-#        * Lowest Frequency
-#        * Lowest CPM
+# # Conclusions #5:
+#    The optimal week days for the company's ads are -
+#    __Monday to Thursday__
+
+# ---------------
+
+# # The company's optimal general <u>audience</u>  and <u>days</u>  to target are:<br>
+# <font color = orange>
+#    #### Female 18 - 34 & male 25 - 34 who lives in Tel Aviv District, using Instagram stories & feed + Facebook feed, on mobile.<br>
+#    #### Run ads Monday to Thursday
+
+# ---------------
+
+# ---------------
+
+# # Exploring optimal daily bugdet for each campaign target
 
 # #### Get list of Campaigns targets:
 
-# In[60]:
+# In[30]:
 
 
 objective = campaigns.groupby(["Campaign ID", "Objective"])["Amount Spent"].count().reset_index()
@@ -448,13 +519,13 @@ objective_list
 
 # #### Is there a direct link between daily budget and results?
 
-# In[123]:
+# In[52]:
 
 
 campaign_target = input(f"Choose the target you need form the list: {objective_list}")
 
 
-# In[124]:
+# In[53]:
 
 
 camp_loc = campaigns.merge(geographics,
@@ -463,17 +534,17 @@ camp_loc = campaigns.merge(geographics,
                 right_on=['Campaign ID', 'Day'])
 
 
-# In[125]:
+# In[54]:
 
 
 mask_target = camp_loc["Objective"] == campaign_target
 camp_loc["Amount Spent_x"] = round(camp_loc["Amount Spent_x"])
 day_budg = camp_loc[mask_target].rename(columns={"Amount Spent_x":"Daily Budget"}).groupby("Daily Budget")["Results"].sum().to_frame().sort_values("Daily Budget")
 
-day_budg.tail()
+day_budg.sort_values("Results", ascending=False).head()
 
 
-# In[126]:
+# In[55]:
 
 
 x_axis = day_budg.index
@@ -488,54 +559,29 @@ plt.title(f'Daily Budget and Results in a {campaign_target} campaign')
 plt.show()
 
 
-# In[127]:
+# #### Is there a direct link between daily budget and Cost per Result?
 
-
-campaign_target = input(f"Choose the target you need form the list: {objective_list}")
-
-
-# In[128]:
-
-
-camp_loc = campaigns.merge(geographics,
-                how='inner',
-                left_on=['Campaign ID', 'Day'],
-                right_on=['Campaign ID', 'Day'])
-
-
-# In[129]:
+# In[56]:
 
 
 mask_target = camp_loc["Objective"] == campaign_target
 camp_loc["Amount Spent_x"] = round(camp_loc["Amount Spent_x"])
-day_budg = camp_loc[mask_target].rename(columns={"Amount Spent_x":"Daily Budget"}).groupby("Daily Budget")["Results"].sum().to_frame().sort_values("Daily Budget")
+day_budg = camp_loc[mask_target].rename(columns={"Amount Spent_x":"Daily Budget"}).groupby("Daily Budget")["Cost per Result"].sum().to_frame().sort_values("Daily Budget")
 
-day_budg.tail()
+day_budg.sort_values("Cost per Result").head()
 
 
-# In[130]:
+# In[57]:
 
 
 x_axis = day_budg.index
-y_axis = day_budg["Results"]
+y_axis = day_budg["Cost per Result"]
 
 plt.figure(figsize=(10,3))
 plt.plot(x_axis, y_axis, marker = 'o')
 
 plt.xlabel('Daily Budget')
 plt.ylabel('Results')
-plt.title(f'Daily Budget and Results in a {campaign_target} campaign')
+plt.title(f'Daily Budget and Cost per Result in a {campaign_target} campaign')
 plt.show()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
 
